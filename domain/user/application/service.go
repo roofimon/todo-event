@@ -14,11 +14,11 @@ import (
 )
 
 var (
-	ErrInvalidName         = errors.New("name must not be empty")
-	ErrInvalidEmail        = errors.New("email must not be empty")
-	ErrInvalidToken        = errors.New("invalid verification token")
-	ErrCreditNotChecked    = errors.New("credit score not yet checked")
-	ErrCreditDenied        = errors.New("credit application was denied")
+	ErrInvalidName      = errors.New("name must not be empty")
+	ErrInvalidEmail     = errors.New("email must not be empty")
+	ErrInvalidToken     = errors.New("invalid verification token")
+	ErrCreditNotChecked = errors.New("credit score not yet checked")
+	ErrCreditDenied     = errors.New("credit application was denied")
 )
 
 type Service struct {
@@ -64,6 +64,8 @@ func (s *Service) VerifyEmail(ctx context.Context, id bson.ObjectID, token strin
 	}
 	u := current.MustGet()
 	if u.VerificationToken != token {
+		u.Status = domain.EventRegistered
+		s.publisher.Publish(ctx, event.Event{Type: domain.EventTokenVerifyFailed, Payload: u})
 		return mo.Err[domain.User](ErrInvalidToken)
 	}
 	next := u.WithEmailVerified()
@@ -119,4 +121,21 @@ func (s *Service) CompleteProfile(ctx context.Context, id bson.ObjectID, bio str
 		},
 	})
 	return mo.Ok(next)
+}
+
+func (s *Service) ReverseUserStatus(ctx context.Context, payload *domain.User) mo.Result[domain.User] {
+	current := s.GetUser(ctx, payload.ID)
+	if current.IsError() {
+		return mo.Err[domain.User](current.Error())
+	}
+	user := current.MustGet()
+	user.Status = domain.StatusRegistered
+
+	if r := s.repo.Append(ctx, payload.ID, domain.EventRegistered, payload); r.IsError() {
+		return mo.Err[domain.User](r.Error())
+	}
+
+	s.publisher.Publish(ctx, event.Event{Type: domain.EventRegistered, Payload: user})
+
+	return mo.Ok(user)
 }

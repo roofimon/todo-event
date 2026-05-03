@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"hash/fnv"
 	"log"
@@ -9,11 +10,15 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/nats-io/nats.go"
-
+	"todoe/domain/user/domain"
 	userdomain "todoe/domain/user/domain"
+	"todoe/internal/event"
 	"todoe/internal/messaging"
+
+	"github.com/nats-io/nats.go"
 )
+
+type multiPublisher struct{ publishers []event.Publisher }
 
 // fakeCreditAPI returns a deterministic score (300–850) based on email.
 // Scores >= 600 are approved.
@@ -22,6 +27,19 @@ func fakeCreditAPI(email string) (score int, approved bool) {
 	h.Write([]byte(email))
 	score = 400 + int(h.Sum32()%551)
 	return score, score >= 600
+}
+
+type natsPublisher struct {
+	conn    *nats.Conn
+	subject string
+}
+
+func (p *natsPublisher) Publish(_ context.Context, e event.Event) {
+	payload, _ := json.Marshal(e.Payload)
+	data, _ := json.Marshal(messaging.Message{Type: e.Type, Payload: payload})
+	if err := p.conn.Publish(p.subject, data); err != nil {
+		slog.Error("nats: publish error", "subject", p.subject, "err", err)
+	}
 }
 
 func main() {
@@ -60,6 +78,20 @@ func main() {
 			Score:    score,
 			Approved: approved,
 		})
+		if score < 600 {
+			user.Status = domain.StatusRegistered
+			user.CreditScore = 0
+			slog.Error("score disqualified: user score disqualified")
+			mUser, _ := json.Marshal(user)
+			data, _ := json.Marshal(messaging.Message{
+				Type:    domain.EventScoreDisqualified,
+				Payload: mUser,
+			})
+			if err := nc.Publish(messaging.UserSubject, data); err != nil {
+				slog.Error("credit: publish result", "err", err)
+			}
+			return
+		}
 		data, _ := json.Marshal(messaging.Message{
 			Type:    userdomain.EventCreditScored,
 			Payload: payload,

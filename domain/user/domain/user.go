@@ -17,11 +17,13 @@ const (
 )
 
 const (
-	EventRegistered       = "user.registered"
-	EventEmailVerified    = "user.email_verified"
-	EventCreditScored     = "user.credit_scored"
-	EventProfileCompleted = "user.profile_completed"
-	EventUserActivated    = "user.activated"
+	EventRegistered        = "user.registered"
+	EventScoreDisqualified 	  = "user.score_disqualified"
+	EventEmailVerified     = "user.email_verified"
+	EventTokenVerifyFailed = "user.token_verify_failed"
+	EventCreditScored      = "user.credit_scored"
+	EventProfileCompleted  = "user.profile_completed"
+	EventUserActivated     = "user.activated"
 )
 
 type User struct {

@@ -105,6 +105,8 @@ func main() {
 	userBus.Subscribe(userdomain.EventEmailVerified, userProjection)
 	userBus.Subscribe(userdomain.EventCreditScored, userProjection)
 	userBus.Subscribe(userdomain.EventProfileCompleted, userProjection)
+	userBus.Subscribe(userdomain.EventTokenVerifyFailed, userProjection)
+	userBus.Subscribe(userdomain.EventScoreDisqualified, userProjection)
 	userPublisher := &multiPublisher{publishers: []event.Publisher{
 		userBus,
 		&natsPublisher{nc, messaging.UserSubject},
@@ -120,6 +122,27 @@ func main() {
 	authenBus.Subscribe(authendomain.EventLoggedOut, authenProjection)
 	authenService := authenapp.NewService(authenRepo, authenBus)
 	authenHandler := authenhttp.NewHandler(authenService)
+
+	// nat subscribe
+	nc.Subscribe(messaging.UserSubject, func(m *nats.Msg) {
+		var msg messaging.Message
+		if err := json.Unmarshal(m.Data, &msg); err != nil {
+			slog.Error("api: credit result unmarshal", "err", err)
+			return
+		}
+		if msg.Type != userdomain.EventScoreDisqualified {
+			return
+		}
+		var u userdomain.User
+		if err := json.Unmarshal(msg.Payload, &u); err != nil {
+			slog.Error("api: credit scored unmarshal", "err", err)
+			return
+		}
+
+		if r := userService.ReverseUserStatus(context.Background(), &u); r.IsError() {
+			slog.Error("api: reverse user status after credit disqualified failed", "err", r.Error())
+		}
+	})
 
 	// user.activated → create auth credential for the newly onboarded user
 	userBus.Subscribe(userdomain.EventUserActivated, func(ctx context.Context, e event.Event) error {
