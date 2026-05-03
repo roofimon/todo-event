@@ -54,8 +54,6 @@ func main() {
 	}
 	defer nc.Drain()
 
-//	natPub := &natsPublisher{nc, messaging.TaskSubject}
-
 	nc.Subscribe(messaging.UserSubject, func(m *nats.Msg) {
 		var msg messaging.Message
 		if err := json.Unmarshal(m.Data, &msg); err != nil {
@@ -74,24 +72,21 @@ func main() {
 
 		score, approved := fakeCreditAPI(user.Email)
 		slog.Info("credit: scored", "user_id", user.ID.Hex(), "email", user.Email, "score", score, "approved", approved)
-		
+
 		payload, _ := json.Marshal(userdomain.CreditScoredPayload{
 			UserID:   user.ID.Hex(),
 			Score:    score,
 			Approved: approved,
 		})
-		// remove in future
-		// score = 100
 		if score < 600 {
 			user.Status = domain.StatusRegistered
 			user.CreditScore = 0
 			slog.Error("score disqualified: user score disqualified")
-			mUser, _ :=json.Marshal(user)
+			mUser, _ := json.Marshal(user)
 			data, _ := json.Marshal(messaging.Message{
-				Type: domain.EventScoreDisqualified,
+				Type:    domain.EventScoreDisqualified,
 				Payload: mUser,
 			})
-			// natPub.Publish(context.Background(), event.Event{Type: domain.EventScoreDisqualified, Payload: user})
 			if err := nc.Publish(messaging.UserSubject, data); err != nil {
 				slog.Error("credit: publish result", "err", err)
 			}
