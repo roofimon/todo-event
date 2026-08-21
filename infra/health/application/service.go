@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/samber/mo"
-	"todoe/internal/health/domain"
-	"todoe/internal/health/port"
+	"todoe/infra/health/domain"
+	"todoe/infra/health/port"
 )
 
 type Service struct {

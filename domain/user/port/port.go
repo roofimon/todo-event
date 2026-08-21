@@ -7,7 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/v2/bson"
 
 	"todoe/domain/user/domain"
-	"todoe/internal/event"
+	"todoe/infra/event"
 )
 
 type UseCase interface {

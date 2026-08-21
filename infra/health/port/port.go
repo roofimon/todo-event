@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/samber/mo"
-	"todoe/internal/health/domain"
+	"todoe/infra/health/domain"
 )
 
 type UseCase interface {

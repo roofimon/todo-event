@@ -12,7 +12,7 @@ import (
 	"github.com/nats-io/nats.go"
 
 	userdomain "todoe/domain/user/domain"
-	"todoe/internal/messaging"
+	"todoe/infra/messaging"
 )
 
 // fakeCreditAPI returns a deterministic score (300–850) based on email.

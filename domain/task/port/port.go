@@ -6,7 +6,7 @@ import (
 	"github.com/samber/mo"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"todoe/domain/task/domain"
-	"todoe/internal/event"
+	"todoe/infra/event"
 )
 
 type UseCase interface {

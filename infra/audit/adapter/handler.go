@@ -7,8 +7,8 @@ import (
 	"github.com/samber/mo"
 	"go.mongodb.org/mongo-driver/v2/bson"
 
-	"todoe/internal/audit/domain"
-	"todoe/internal/event"
+	"todoe/infra/audit/domain"
+	"todoe/infra/event"
 )
 
 type auditRepository interface {

@@ -14,7 +14,7 @@ import (
 
 	"github.com/nats-io/nats.go"
 
-	"todoe/internal/messaging"
+	"todoe/infra/messaging"
 )
 
 type lokiPush struct {

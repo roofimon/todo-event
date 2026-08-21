@@ -11,7 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 
-	"todoe/internal/authen/domain"
+	"todoe/infra/authen/domain"
 )
 
 type StoredEvent struct {

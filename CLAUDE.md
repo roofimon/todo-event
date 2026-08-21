@@ -9,7 +9,7 @@ Modular monolith, Ports & Adapters (hexagonal) architecture, append-only event s
 Each domain follows this layout exactly:
 
 ```
-internal/<domain>/
+infra/<domain>/
 ├── domain/          — models, constants, value objects
 ├── port/            — UseCase (PortIn) and Repository (PortOut) interfaces
 ├── adapter/
@@ -18,7 +18,7 @@ internal/<domain>/
 └── application/     — Service struct (orchestration + pure logic helpers)
 
 cmd/api/             — binary entry point; wires all adapters
-internal/            — one subdirectory per domain, no cross-domain imports
+infra/               — one subdirectory per domain, no cross-domain imports
 ```
 
 ---

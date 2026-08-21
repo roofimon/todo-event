@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"todoe/domain/user/domain"
-	"todoe/internal/event"
+	"todoe/infra/event"
 )
 
 func NewProjectionHandler(repo *MongoRepository) func(context.Context, event.Event) error {

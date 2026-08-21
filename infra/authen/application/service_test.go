@@ -10,8 +10,8 @@ import (
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"golang.org/x/crypto/bcrypt"
 
-	"todoe/internal/authen/domain"
-	"todoe/internal/event"
+	"todoe/infra/authen/domain"
+	"todoe/infra/event"
 )
 
 type repositoryStub struct {

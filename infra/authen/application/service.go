@@ -10,16 +10,16 @@ import (
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"golang.org/x/crypto/bcrypt"
 
-	"todoe/internal/authen/domain"
-	"todoe/internal/authen/port"
-	"todoe/internal/event"
+	"todoe/infra/authen/domain"
+	"todoe/infra/authen/port"
+	"todoe/infra/event"
 )
 
 var (
-	ErrInvalidCredentials   = errors.New("invalid email or password")
-	ErrEmailAlreadyExists   = errors.New("email already registered")
-	ErrSessionNotFound      = errors.New("session not found")
-	ErrSessionExpired       = errors.New("session has expired")
+	ErrInvalidCredentials = errors.New("invalid email or password")
+	ErrEmailAlreadyExists = errors.New("email already registered")
+	ErrSessionNotFound    = errors.New("session not found")
+	ErrSessionExpired     = errors.New("session has expired")
 )
 
 const sessionTTL = 24 * time.Hour

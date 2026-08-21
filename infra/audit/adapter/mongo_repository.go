@@ -8,7 +8,7 @@ import (
 	"github.com/samber/mo"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 
-	"todoe/internal/audit/domain"
+	"todoe/infra/audit/domain"
 )
 
 type MongoRepository struct {

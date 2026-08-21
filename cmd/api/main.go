@@ -15,14 +15,14 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 
-	healthadapter "todoe/internal/health/adapter"
-	healthhttp "todoe/internal/health/adapter/http"
-	healthapp "todoe/internal/health/application"
+	healthadapter "todoe/infra/health/adapter"
+	healthhttp "todoe/infra/health/adapter/http"
+	healthapp "todoe/infra/health/application"
 
-	authenAdapter "todoe/internal/authen/adapter"
-	authenhttp "todoe/internal/authen/adapter/http"
-	authenapp "todoe/internal/authen/application"
-	authendomain "todoe/internal/authen/domain"
+	authenAdapter "todoe/infra/authen/adapter"
+	authenhttp "todoe/infra/authen/adapter/http"
+	authenapp "todoe/infra/authen/application"
+	authendomain "todoe/infra/authen/domain"
 
 	taskadapter "todoe/domain/task/adapter"
 	taskhttp "todoe/domain/task/adapter/http"
@@ -34,8 +34,8 @@ import (
 	userapplication "todoe/domain/user/application"
 	userdomain "todoe/domain/user/domain"
 
-	"todoe/internal/event"
-	"todoe/internal/messaging"
+	"todoe/infra/event"
+	"todoe/infra/messaging"
 )
 
 type natsPublisher struct {

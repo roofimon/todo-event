@@ -10,15 +10,15 @@ import (
 
 	"todoe/domain/user/domain"
 	"todoe/domain/user/port"
-	"todoe/internal/event"
+	"todoe/infra/event"
 )
 
 var (
-	ErrInvalidName         = errors.New("name must not be empty")
-	ErrInvalidEmail        = errors.New("email must not be empty")
-	ErrInvalidToken        = errors.New("invalid verification token")
-	ErrCreditNotChecked    = errors.New("credit score not yet checked")
-	ErrCreditDenied        = errors.New("credit application was denied")
+	ErrInvalidName      = errors.New("name must not be empty")
+	ErrInvalidEmail     = errors.New("email must not be empty")
+	ErrInvalidToken     = errors.New("invalid verification token")
+	ErrCreditNotChecked = errors.New("credit score not yet checked")
+	ErrCreditDenied     = errors.New("credit application was denied")
 )
 
 type Service struct {

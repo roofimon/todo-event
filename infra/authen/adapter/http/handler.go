@@ -5,8 +5,8 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 
-	"todoe/internal/authen/application"
-	"todoe/internal/authen/port"
+	"todoe/infra/authen/application"
+	"todoe/infra/authen/port"
 )
 
 type Handler struct {

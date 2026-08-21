@@ -29,7 +29,7 @@ pkg/                 — Shared infrastructure utilities (not domain services)
 └── ...
 
 cmd/api/             — Binary entry point; wires all domains and adapters
-internal/            — Reserved for infrastructure that must not be imported externally
+infra/               — Project infrastructure packages
 ```
 
 ## Design Decisions

@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"todoe/internal/authen/domain"
-	"todoe/internal/event"
+	"todoe/infra/authen/domain"
+	"todoe/infra/event"
 )
 
 func NewProjectionHandler(repo *MongoRepository) func(context.Context, event.Event) error {

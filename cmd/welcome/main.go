@@ -11,7 +11,7 @@ import (
 	"github.com/nats-io/nats.go"
 
 	userdomain "todoe/domain/user/domain"
-	"todoe/internal/messaging"
+	"todoe/infra/messaging"
 )
 
 func main() {

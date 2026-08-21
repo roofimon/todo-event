@@ -10,7 +10,7 @@ import (
 
 	"todoe/domain/task/domain"
 	"todoe/domain/task/port"
-	"todoe/internal/event"
+	"todoe/infra/event"
 )
 
 var (

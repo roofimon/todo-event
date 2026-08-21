@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"todoe/internal/health/port"
+	"todoe/infra/health/port"
 )
 
 type Handler struct {
