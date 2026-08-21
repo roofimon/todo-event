@@ -63,6 +63,17 @@ Exposed ports:
 
 ## Run Services (4 terminals)
 
+To start the Docker infrastructure and all four backend services in one terminal:
+
+```bash
+go run ./cmd/start
+```
+
+The script starts the subscriber workers before the API and stops the Go
+services when you press Ctrl+C. Docker services remain running.
+
+Or start each backend service manually:
+
 ### 1) API
 
 ```bash
