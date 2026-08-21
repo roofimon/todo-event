@@ -14,8 +14,8 @@ import (
 )
 
 var (
-	ErrInvalidName      = errors.New("name must not be empty")
-	ErrInvalidEmail     = errors.New("email must not be empty")
+	ErrInvalidName      = domain.ErrInvalidName
+	ErrInvalidEmail     = domain.ErrInvalidEmail
 	ErrInvalidToken     = errors.New("invalid verification token")
 	ErrCreditNotChecked = errors.New("credit score not yet checked")
 	ErrCreditDenied     = errors.New("credit application was denied")
@@ -32,23 +32,20 @@ func NewService(repo port.Repository, publisher port.Publisher) *Service {
 	return &Service{repo: repo, publisher: publisher}
 }
 
-func (s *Service) Register(ctx context.Context, name, email string) mo.Result[domain.User] {
-	if name == "" {
-		return mo.Err[domain.User](ErrInvalidName)
-	}
-	if email == "" {
-		return mo.Err[domain.User](ErrInvalidEmail)
+func (s *Service) Register(ctx context.Context, input domain.RegisterInput) mo.Result[domain.User] {
+	if err := input.Validate(); err != nil {
+		return mo.Err[domain.User](err)
 	}
 	id := bson.NewObjectID()
 	token := bson.NewObjectID().Hex()
-	payload := domain.RegisteredPayload{Name: name, Email: email, VerificationToken: token}
+	payload := domain.RegisteredPayload{Name: input.Name(), Email: input.Email(), VerificationToken: token}
 	if r := s.repo.Append(ctx, id, domain.EventRegistered, payload); r.IsError() {
 		return mo.Err[domain.User](r.Error())
 	}
 	user := domain.User{
 		ID:                id,
-		Name:              name,
-		Email:             email,
+		Name:              input.Name(),
+		Email:             input.Email(),
 		Status:            domain.StatusRegistered,
 		VerificationToken: token,
 		CreatedAt:         time.Now(),

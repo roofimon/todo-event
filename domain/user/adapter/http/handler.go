@@ -7,6 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/v2/bson"
 
 	"todoe/domain/user/application"
+	"todoe/domain/user/domain"
 	"todoe/domain/user/port"
 )
 
@@ -26,11 +27,12 @@ func (h *Handler) Register(c *fiber.Ctx) error {
 	if err := c.BodyParser(&body); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
-	result := h.useCase.Register(c.Context(), body.Name, body.Email)
+	input := domain.NewRegisterInput(body.Name, body.Email)
+	if input.IsError() {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": input.Error().Error()})
+	}
+	result := h.useCase.Register(c.Context(), input.MustGet())
 	if result.IsError() {
-		if errors.Is(result.Error(), application.ErrInvalidName) || errors.Is(result.Error(), application.ErrInvalidEmail) {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": result.Error().Error()})
-		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "internal error"})
 	}
 	return c.Status(fiber.StatusCreated).JSON(result.MustGet())

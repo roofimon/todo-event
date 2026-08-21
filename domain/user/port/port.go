@@ -11,7 +11,7 @@ import (
 )
 
 type UseCase interface {
-	Register(ctx context.Context, name, email string) mo.Result[domain.User]
+	Register(ctx context.Context, input domain.RegisterInput) mo.Result[domain.User]
 	VerifyEmail(ctx context.Context, id bson.ObjectID, token string) mo.Result[domain.User]
 	RecordCreditScore(ctx context.Context, id bson.ObjectID, score int, approved bool) mo.Result[domain.User]
 	CompleteProfile(ctx context.Context, id bson.ObjectID, bio string) mo.Result[domain.User]
