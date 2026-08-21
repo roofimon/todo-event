@@ -4,13 +4,18 @@ import (
 	"context"
 	"time"
 
+	"github.com/samber/mo"
 	"go.mongodb.org/mongo-driver/v2/bson"
 
 	"todoe/internal/audit/domain"
 	"todoe/internal/event"
 )
 
-func NewAuditHandler(repo *MongoRepository) func(context.Context, event.Event) error {
+type auditRepository interface {
+	Save(context.Context, domain.AuditEntry) mo.Result[struct{}]
+}
+
+func NewAuditHandler(repo auditRepository) func(context.Context, event.Event) error {
 	return func(ctx context.Context, e event.Event) error {
 		entry := domain.AuditEntry{
 			ID:        bson.NewObjectID(),
