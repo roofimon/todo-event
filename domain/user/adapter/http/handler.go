@@ -1,14 +1,15 @@
 package httpadapter
 
 import (
-	"errors"
+	"context"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/samber/mo"
 	"go.mongodb.org/mongo-driver/v2/bson"
 
-	"todoe/domain/user/application"
 	"todoe/domain/user/domain"
 	"todoe/domain/user/port"
+	"todoe/infra/result"
 )
 
 type Handler struct {
@@ -20,77 +21,50 @@ func NewHandler(useCase port.UseCase) *Handler {
 }
 
 func (h *Handler) Register(c *fiber.Ctx) error {
-	var body struct {
-		Name  string `json:"name"`
-		Email string `json:"email"`
-	}
-	if err := c.BodyParser(&body); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
-	}
-	input := domain.NewRegisterInput(body.Name, body.Email)
-	if input.IsError() {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": input.Error().Error()})
-	}
-	result := h.useCase.Register(c.Context(), input.MustGet())
-	if result.IsError() {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "internal error"})
-	}
-	return c.Status(fiber.StatusCreated).JSON(result.MustGet())
+	parsed := parseRegisterBody(c)
+	input := result.FlatMap(parsed, toRegisterInput)
+	registered := result.FlatMap(input, h.register(c.Context()))
+	return resolveResult(c, registered)
 }
 
 func (h *Handler) VerifyEmail(c *fiber.Ctx) error {
-	id, err := bson.ObjectIDFromHex(c.Params("id"))
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid id"})
-	}
-	var body struct {
-		Token string `json:"token"`
-	}
-	if err := c.BodyParser(&body); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
-	}
-	result := h.useCase.VerifyEmail(c.Context(), id, body.Token)
-	if result.IsError() {
-		if errors.Is(result.Error(), application.ErrInvalidToken) {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": result.Error().Error()})
-		}
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "user not found"})
-	}
-	return c.JSON(result.MustGet())
+	parsed := parseVerifyEmailRequest(c)
+	verified := result.FlatMap(parsed, h.verifyEmail(c.Context()))
+	return resolveVerifyEmailResult(c, verified)
 }
 
 func (h *Handler) GetUser(c *fiber.Ctx) error {
-	id, err := bson.ObjectIDFromHex(c.Params("id"))
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid id"})
-	}
-	result := h.useCase.GetUser(c.Context(), id)
-	if result.IsError() {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "user not found"})
-	}
-	return c.JSON(result.MustGet())
+	parsed := parseUserID(c)
+	user := result.FlatMap(parsed, h.getUser(c.Context()))
+	return resolveGetUserResult(c, user)
 }
 
 func (h *Handler) CompleteProfile(c *fiber.Ctx) error {
-	id, err := bson.ObjectIDFromHex(c.Params("id"))
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid id"})
+	parsed := parseCompleteProfileRequest(c)
+	completed := result.FlatMap(parsed, h.completeProfile(c.Context()))
+	return resolveCompleteProfileResult(c, completed)
+}
+
+func (h *Handler) register(ctx context.Context) func(domain.RegisterInput) mo.Result[domain.User] {
+	return func(input domain.RegisterInput) mo.Result[domain.User] {
+		return h.useCase.Register(ctx, input)
 	}
-	var body struct {
-		Bio string `json:"bio"`
+}
+
+func (h *Handler) verifyEmail(ctx context.Context) func(verifyEmailRequest) mo.Result[domain.User] {
+	return func(request verifyEmailRequest) mo.Result[domain.User] {
+		return h.useCase.VerifyEmail(ctx, request.userID, request.token)
 	}
-	if err := c.BodyParser(&body); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+}
+
+func (h *Handler) getUser(ctx context.Context) func(bson.ObjectID) mo.Result[domain.User] {
+	return func(id bson.ObjectID) mo.Result[domain.User] {
+		return h.useCase.GetUser(ctx, id)
 	}
-	result := h.useCase.CompleteProfile(c.Context(), id, body.Bio)
-	if result.IsError() {
-		switch {
-		case errors.Is(result.Error(), application.ErrCreditDenied):
-			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": result.Error().Error()})
-		case errors.Is(result.Error(), application.ErrCreditNotChecked):
-			return c.Status(fiber.StatusConflict).JSON(fiber.Map{"error": result.Error().Error()})
-		}
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "internal error"})
+}
+
+func (h *Handler) completeProfile(ctx context.Context) func(completeProfileRequest) mo.Result[domain.User] {
+	return func(request completeProfileRequest) mo.Result[domain.User] {
+		return h.useCase.CompleteProfile(ctx, request.userID, request.bio)
 	}
-	return c.JSON(result.MustGet())
 }
