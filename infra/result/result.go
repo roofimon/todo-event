@@ -13,3 +13,13 @@ func FlatMap[I, O any](input mo.Result[I], mapper func(I) mo.Result[O]) mo.Resul
 	}
 	return mapper(value)
 }
+
+// FlatMap3 composes an initial result and two result-producing functions,
+// allowing the contained type to change at each stage.
+func FlatMap3[A, B, C any](
+	input mo.Result[A],
+	first func(A) mo.Result[B],
+	second func(B) mo.Result[C],
+) mo.Result[C] {
+	return FlatMap(FlatMap(input, first), second)
+}
